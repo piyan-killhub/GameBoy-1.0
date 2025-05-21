@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBoy 1.0 - Tebak Angka & Batu Gunting Kertas</title>
+    <style>
+        /* Reset dan style umum */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #0c1a2a;
+            color: #c5e1fc;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(28, 175, 253, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(249, 85, 189, 0.1) 0%, transparent 20%);
+        }
+        
+        /* Animasi latar belakang cyber */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(0deg, transparent 24%, rgba(32, 105, 223, 0.1) 25%, rgba(32, 105, 223, 0.1) 26%, transparent 27%, transparent 74%, rgba(32, 105, 223, 0.1) 75%, rgba(32, 105, 223, 0.1) 76%, transparent 77%, transparent),
+                            linear-gradient(90deg, transparent 24%, rgba(32, 105, 223, 0.1) 25%, rgba(32, 105, 223, 0.1) 26%, transparent 27%, transparent 74%, rgba(32, 105, 223, 0.1) 75%, rgba(32, 105, 223, 0.1) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+        
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #66e4ff;
+            text-shadow: 0 0 10px rgba(102, 228, 255, 0.5);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-top: 20px;
+            color: #4deeea;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+            padding-bottom: 5px;
+        }
+        
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #4deeea, #f000ff, #4deeea);
+            background-size: 200% 100%;
+            animation: gradientMove 3s infinite linear;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #00a8ff, #007bff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #0097e6, #0069d9);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            transition: all 0.3s;
+            opacity: 0;
+        }
+        
+        button:hover::after {
+            opacity: 1;
+            animation: buttonGlow 2s infinite;
+        }
+        
+        @keyframes buttonGlow {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+        
+        .container {
+            background-color: rgba(16, 30, 54, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(102, 228, 255, 0.2);
+            margin-top: 30px;
+            border: 1px solid rgba(102, 228, 255, 0.3);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 16px;
+            background: linear-gradient(45deg, #4deeea, transparent, #f000ff, transparent, #4deeea);
+            background-size: 400% 400%;
+            z-index: -1;
+            animation: borderGlow 6s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 400% 400%; }
+        }
+        
+        .menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 30px 0;
+            position: relative;
+        }
+        
+        .menu::after {
+            content: "";
+            position: absolute;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #66e4ff, transparent);
+            bottom: 10px;
+        }
+        
+        .menu button {
+            width: 280px;
+            padding: 18px;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #4d54e1, #9075f3);
+            position: relative;
+            z-index: 1;
+            border-radius: 8px;
+        }
+        
+        .menu button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f000ff, #4deeea);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: -1;
+            border-radius: 8px;
+        }
+        
+        .menu button:hover::before {
+            opacity: 1;
+        }
+        
+        .game {
+            display: none;
+            animation: fadeInScale 0.7s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        
+        @keyframes fadeInScale {
+            from { 
+                opacity: 0; 
+                transform: scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        #game-tebak-angka {
+            text-align: center;
+        }
+        
+        #game-tebak-angka input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100px;
+            font-size: 1rem;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        #clue {
+            margin: 15px 0;
+            font-weight: bold;
+            min-height: 24px;
+        }
+        
+        .low {
+            color: #e74c3c;
+        }
+        
+        .high {
+            color: #9b59b6;
+        }
+        
+        .correct {
+            color: #2ecc71;
+            font-size: 1.2rem;
+        }
+        
+        /* Style untuk game Batu Gunting Kertas */
+        #game-batu-gunting-kertas {
+            text-align: center;
+            position: relative;
+        }
+        
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            perspective: 1000px;
+        }
+        
+        .option {
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, rgba(77, 238, 234, 0.1), rgba(240, 0, 255, 0.1));
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            border: 2px solid rgba(102, 228, 255, 0.5);
+            box-shadow: 0 0 20px rgba(102, 228, 255, 0.2);
+            position: relative;
+        }
+        
+        .option::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0.5;
+        }
+        
+        .option:hover {
+            transform: scale(1.15) rotateY(10deg);
+            box-shadow: 0 0 30px rgba(102, 228, 255, 0.5);
+            border-color: #f000ff;
+        }
+        
+        .choices {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .choices::after {
+            content: "VS";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f000ff;
+            text-shadow: 0 0 10px rgba(240, 0, 255, 0.7);
+        }
+        
+        .choice {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: rgba(16, 30, 54, 0.4);
+            width: 40%;
+            box-shadow: 0 0 15px rgba(102, 228, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .choice h3 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            color: #66e4ff;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .choice h3::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #66e4ff, transparent);
+        }
+        
+        .choice-display {
+            font-size: 3.5rem;
+            margin: 15px 0;
+            min-height: 70px;
+            position: relative;
+            animation: floatEmoji 3s infinite ease-in-out;
+        }
+        
+        @keyframes floatEmoji {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .result {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 25px 0;
+            min-height: 36px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+        }
+        
+        .score {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 25px 0;
+            font-size: 1.3rem;
+        }
+        
+        .score-item {
+            background: linear-gradient(135deg, rgba(77, 238, 234, 0.1), rgba(240, 0, 255, 0.1));
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid rgba(102, 228, 255, 0.3);
+            box-shadow: 0 0 15px rgba(102, 228, 255, 0.2);
+            position: relative;
+        }
+        
+        .score-item span {
+            color: #f000ff;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-shadow: 0 0 8px rgba(240, 0, 255, 0.5);
+        }
+        
+        /* Game controls */
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, #7d8da2, #546b8c);
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(135deg, #6c7c91, #45597a);
+        }
+        
+        .reset-button {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+        
+        .reset-button:hover {
+            background: linear-gradient(135deg, #e63b61, #e64226);
+        }
+        
+        /* Animasi tambahan */
+        @keyframes neonPulse {
+            0%, 100% { text-shadow: 0 0 10px rgba(102, 228, 255, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(102, 228, 255, 0.8), 0 0 30px rgba(102, 228, 255, 0.5); }
+        }
+        
+        h2 {
+            animation: neonPulse 4s infinite;
+        }
+        
+        /* Responsif */
+        @media (max-width: 600px) {
+            .options {
+                gap: 15px;
+            }
+            
+            .option {
+                width: 90px;
+                height: 90px;
+                font-size: 2.4rem;
+            }
+            
+            .choices {
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+            
+            .choices::after {
+                top: 50%;
+                transform: translate(-50%, -50%) rotate(90deg);
+            }
+            
+            .choice {
+                width: 80%;
+            }
+        }
+        
+        /* Style untuk font futuristik */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+    </style>
+</head>
+<body>
+    <h1>GameBoy 1.0</h1>
+    
+    <!-- Menu Utama -->
+    <div id="main-menu" class="container menu">
+        <h2>Pilih Game</h2>
+        <button id="btn-tebak-angka">Main Tebak Angka</button>
+        <button id="btn-batu-gunting-kertas">Main Batu Gunting Kertas</button>
+    </div>
+    
+    <!-- Game Tebak Angka -->
+    <div id="game-tebak-angka" class="container game">
+        <h2>Game Tebak Angka</h2>
+        <p>Tebak angka antara 1 sampai 100:</p>
+        <input type="number" id="guess" min="1" max="100" placeholder="?">
+        <button id="btn-tebak">Tebak!</button>
+        <div id="clue"></div>
+        <div id="attempts" style="color: #7dffb3; font-size: 1.1rem; margin: 10px 0; font-weight: 500;">Jumlah percobaan: 0</div>
+        <div class="game-controls">
+            <button id="btn-restart-tebak-angka" style="display: none;">Main Lagi</button>
+            <button class="back-button" id="btn-back-tebak-angka">Kembali ke Menu</button>
+        </div>
+    </div>
+    
+    <!-- Game Batu Gunting Kertas -->
+    <div id="game-batu-gunting-kertas" class="container game">
+        <h2>Game Batu Gunting Kertas</h2>
+        <p>Pilih salah satu:</p>
+        
+        <div class="options">
+            <div class="option" data-choice="batu">✊</div>
+            <div class="option" data-choice="gunting">✌️</div>
+            <div class="option" data-choice="kertas">✋</div>
+        </div>
+        
+        <div class="choices">
+            <div class="choice">
+                <h3>Kamu</h3>
+                <div class="choice-display" id="player-choice"></div>
+            </div>
+            <div class="choice">
+                <h3>Komputer</h3>
+                <div class="choice-display" id="computer-choice"></div>
+            </div>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="score">
+            <div class="score-item">Kamu: <span id="player-score">0</span></div>
+            <div class="score-item">Komputer: <span id="computer-score">0</span></div>
+        </div>
+        
+        <div class="game-controls">
+            <button class="reset-button" id="btn-reset-batu-gunting-kertas">Reset Skor</button>
+            <button class="back-button" id="btn-back-batu-gunting-kertas">Kembali ke Menu</button>
+        </div>
+    </div>
+    
+    <script>
+        // ===== BAGIAN KONTROL TAMPILAN =====
+        
+        // Elemen DOM untuk navigasi
+        const mainMenu = document.getElementById('main-menu');
+        const gameTebakAngka = document.getElementById('game-tebak-angka');
+        const gameBatuGuntingKertas = document.getElementById('game-batu-gunting-kertas');
+        
+        // Tombol menu dan navigasi
+        const btnTebakAngka = document.getElementById('btn-tebak-angka');
+        const btnBatuGuntingKertas = document.getElementById('btn-batu-gunting-kertas');
+        const btnBackTebakAngka = document.getElementById('btn-back-tebak-angka');
+        const btnBackBatuGuntingKertas = document.getElementById('btn-back-batu-gunting-kertas');
+        
+        // Fungsi untuk menampilkan game tertentu dan menyembunyikan yang lain
+        function showGame(game) {
+            // Sembunyikan semua
+            mainMenu.style.display = 'none';
+            gameTebakAngka.style.display = 'none';
+            gameBatuGuntingKertas.style.display = 'none';
+            
+            // Tampilkan yang dipilih
+            if (game === 'menu') {
+                mainMenu.style.display = 'flex';
+            } else if (game === 'tebak-angka') {
+                gameTebakAngka.style.display = 'block';
+                document.getElementById('guess').focus();
+            } else if (game === 'batu-gunting-kertas') {
+                gameBatuGuntingKertas.style.display = 'block';
+            }
+        }
+        
+        // Event listener untuk navigasi
+        btnTebakAngka.addEventListener('click', () => {
+            showGame('tebak-angka');
+            // Reset game tebak angka saat pertama kali dibuka
+            resetTebakAngka();
+        });
+        
+        btnBatuGuntingKertas.addEventListener('click', () => {
+            showGame('batu-gunting-kertas');
+        });
+        
+        btnBackTebakAngka.addEventListener('click', () => {
+            showGame('menu');
+        });
+        
+        btnBackBatuGuntingKertas.addEventListener('click', () => {
+            showGame('menu');
+        });
+        
+        // ===== GAME 1: TEBAK ANGKA =====
+        
+        // Variabel game tebak angka
+        let randomNumber;
+        let attempts;
+        
+        // Elemen DOM untuk game tebak angka
+        const guessInput = document.getElementById('guess');
+        const btnTebak = document.getElementById('btn-tebak');
+        const clueElement = document.getElementById('clue');
+        const attemptsElement = document.getElementById('attempts');
+        const btnRestartTebakAngka = document.getElementById('btn-restart-tebak-angka');
+        
+        // Fungsi untuk menginisialisasi/mereset game tebak angka
+        function resetTebakAngka() {
+            // Generate angka acak antara 1-100
+            randomNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            
+            // Reset tampilan
+            guessInput.value = '';
+            guessInput.disabled = false;
+            btnTebak.disabled = false;
+            clueElement.textContent = '';
+            clueElement.className = '';
+            attemptsElement.textContent = 'Jumlah percobaan: 0';
+            btnRestartTebakAngka.style.display = 'none';
+            
+            // Fokus ke input
+            guessInput.focus();
+            
+            // Untuk debugging
+            console.log('Angka yang harus ditebak: ' + randomNumber);
+        }
+        
+        // Fungsi untuk memeriksa tebakan
+        function checkGuess() {
+            // Dapatkan nilai tebakan
+            const userGuess = parseInt(guessInput.value);
+            
+            // Validasi input
+            if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
+                alert('Masukkan angka antara 1 sampai 100!');
+                guessInput.value = '';
+                guessInput.focus();
+                return;
+            }
+            
+            // Tambah percobaan
+            attempts++;
+            attemptsElement.textContent = `Jumlah percobaan: ${attempts}`;
+            
+            // Periksa tebakan
+            if (userGuess === randomNumber) {
+                // Jawaban benar
+                clueElement.textContent = `Selamat! Kamu berhasil menebak angka ${randomNumber} dalam ${attempts} percobaan.`;
+                clueElement.className = 'correct';
+                
+                // Nonaktifkan input dan tombol tebak
+                guessInput.disabled = true;
+                btnTebak.disabled = true;
+                
+                // Tampilkan tombol restart
+                btnRestartTebakAngka.style.display = 'inline-block';
+            } else if (userGuess < randomNumber) {
+                // Tebakan terlalu rendah
+                clueElement.textContent = 'Terlalu rendah! Coba angka yang lebih besar.';
+                clueElement.className = 'low';
+            } else {
+                // Tebakan terlalu tinggi
+                clueElement.textContent = 'Terlalu tinggi! Coba angka yang lebih kecil.';
+                clueElement.className = 'high';
+            }
+            
+            // Kosongkan input dan fokus
+            guessInput.value = '';
+            guessInput.focus();
+        }
+        
+        // Event listener untuk game tebak angka
+        btnTebak.addEventListener('click', checkGuess);
+        
+        // Event untuk menekan enter saat input
+        guessInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+        
+        // Event untuk tombol restart
+        btnRestartTebakAngka.addEventListener('click', resetTebakAngka);
+        
+        // ===== GAME 2: BATU GUNTING KERTAS =====
+        
+        // Variabel game batu gunting kertas
+        let playerScore = 0;
+        let computerScore = 0;
+        
+        // Elemen DOM untuk game batu gunting kertas
+        const options = document.querySelectorAll('.option');
+        const playerChoiceDisplay = document.getElementById('player-choice');
+        const computerChoiceDisplay = document.getElementById('computer-choice');
+        const resultDisplay = document.getElementById('result');
+        const playerScoreDisplay = document.getElementById('player-score');
+        const computerScoreDisplay = document.getElementById('computer-score');
+        const btnResetBatuGuntingKertas = document.getElementById('btn-reset-batu-gunting-kertas');
+        
+        // Emoji untuk pilihan
+        const choiceEmojis = {
+            'batu': '✊',
+            'gunting': '✌️',
+            'kertas': '✋'
+        };
+        
+        // Fungsi untuk mendapatkan pilihan komputer secara acak
+        function getComputerChoice() {
+            const choices = ['batu', 'gunting', 'kertas'];
+            const randomIndex = Math.floor(Math.random() * 3);
+            return choices[randomIndex];
+        }
+        
+        // Fungsi untuk menentukan hasil permainan
+        function determineWinner(playerChoice, computerChoice) {
+            if (playerChoice === computerChoice) {
+                return 'seri';
+            }
+            
+            if (
+                (playerChoice === 'batu' && computerChoice === 'gunting') ||
+                (playerChoice === 'gunting' && computerChoice === 'kertas') ||
+                (playerChoice === 'kertas' && computerChoice === 'batu')
+            ) {
+                return 'menang';
+            }
+            
+            return 'kalah';
+        }
+        
+        // Fungsi untuk memainkan satu ronde
+        function playRound(playerChoice) {
+            // Dapatkan pilihan komputer
+            const computerChoice = getComputerChoice();
+            
+            // Tampilkan pilihan
+            playerChoiceDisplay.textContent = choiceEmojis[playerChoice];
+            
+            // Animasi pilihan komputer (delay sedikit untuk efek)
+            computerChoiceDisplay.textContent = '';
+            setTimeout(() => {
+                computerChoiceDisplay.textContent = choiceEmojis[computerChoice];
+                
+                // Tentukan pemenang
+                const result = determineWinner(playerChoice, computerChoice);
+                
+                // Update hasil dan skor
+                if (result === 'menang') {
+                    resultDisplay.textContent = 'Kamu Menang! 🎉';
+                    resultDisplay.style.color = '#2ecc71';
+                    playerScore++;
+                } else if (result === 'kalah') {
+                    resultDisplay.textContent = 'Kamu Kalah! 😢';
+                    resultDisplay.style.color = '#e74c3c';
+                    computerScore++;
+                } else {
+                    resultDisplay.textContent = 'Seri! 🤝';
+                    resultDisplay.style.color = '#3498db';
+                }
+                
+                // Update tampilan skor
+                playerScoreDisplay.textContent = playerScore;
+                computerScoreDisplay.textContent = computerScore;
+            }, 300);
+        }
+        
+        // Fungsi untuk mereset skor
+        function resetBatuGuntingKertas() {
+            playerScore = 0;
+            computerScore = 0;
+            playerScoreDisplay.textContent = '0';
+            computerScoreDisplay.textContent = '0';
+            playerChoiceDisplay.textContent = '';
+            computerChoiceDisplay.textContent = '';
+            resultDisplay.textContent = '';
+        }
+        
+        // Event listener untuk pilihan
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                const playerChoice = option.getAttribute('data-choice');
+                playRound(playerChoice);
+            });
+        });
+        
+        // Event listener untuk tombol reset
+        btnResetBatuGuntingKertas.addEventListener('click', resetBatuGuntingKertas);
+        
+        // Inisialisasi awal: tampilkan menu utama
+        showGame('menu');
+    </script>
+</body>
+</html>
